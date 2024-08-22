@@ -1,0 +1,36 @@
+{
+  "name": "server",
+  "version": "0.1.1",
+  "private": true,
+  "scripts": {
+    "dev": "rimraf .next && next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@airstack/node": "^0.0.7",
+    "@moxie-extension/ui": "workspace:*",
+    "@upstash/redis": "^1.32.0",
+    "next": "14.1.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@moxie-extension/eslint-config": "workspace:*",
+    "@moxie-extension/tailwind-config": "workspace:*",
+    "@moxie-extension/typescript-config": "workspace:*",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.0.1",
+    "encoding": "^0.1.13",
+    "eslint": "^8",
+    "eslint-config-next": "14.1.4",
+    "pino-pretty": "^11.0.0",
+    "postcss": "^8",
+    "rimraf": "^5.0.7",
+    "tailwindcss": "^3.4.3",
+    "typescript": "^5.4.4"
+  }
+}

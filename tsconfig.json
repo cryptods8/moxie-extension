@@ -1,0 +1,3 @@
+{
+  "extends": "@moxie-extension/typescript-config/base.json"
+}

@@ -21,11 +21,6 @@ interface AirstackFarcasterCast {
     | null;
 }
 
-if (!process.env.AIRSTACK_API_KEY) {
-  throw new Error("AIRSTACK_API_KEY is required");
-}
-init(process.env.AIRSTACK_API_KEY);
-
 const CastDataQueryFragment = `
 {
   hash
@@ -47,6 +42,11 @@ async function fetchMoxieEarnings(
   castUrl: string,
   type: CastType
 ): Promise<AirstackFarcasterCast | null> {
+  if (!process.env.AIRSTACK_API_KEY) {
+    throw new Error("AIRSTACK_API_KEY is required");
+  }
+  init(process.env.AIRSTACK_API_KEY);
+
   if (type === "reply") {
     const neynarCast = await fetchCastFromNeynar(castUrl);
     if (!neynarCast) {

@@ -1,10 +1,10 @@
-# $DEGEN Tips server
+# Moxie Extension server
 
-This is a [Next.js](https://nextjs.org/)-based server used by the [extension](/apps/extension/README.md) for $DEGEN tips validation
+This is a [Next.js](https://nextjs.org/)-based server used by the [extension](/apps/extension/README.md) for Moxie data in Warpcast
 
 ## Demo
 
-DEMO instance is currently running on vercel at [moxie-server.vercel.app](https://moxie-server.vercel.app)
+DEMO instance is currently running on vercel at [moxie-extension-server.vercel.app](https://moxie-extension-server.vercel.app)
 
 ## Getting Started
 

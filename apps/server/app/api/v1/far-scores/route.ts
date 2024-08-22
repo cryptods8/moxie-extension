@@ -1,7 +1,6 @@
 import { fetchQuery, init } from "@airstack/node";
 import { NextRequest, NextResponse } from "next/server";
 
-type EarnerType = "CHANNEL_FANS" | "CREATOR" | "NETWORK";
 interface AirstackSocial {
   profileName: string;
   socialCapital: {

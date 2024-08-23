@@ -241,9 +241,9 @@ function EarningsIndicator({
     <HoverCard.Root>
       <HoverCard.Trigger>
         <div
-          className={`rounded-full px-2 bg-moxie-500/10 dark:bg-white/10 flex items-baseline gap-1 h-[22px] leading-[23px]`}>
+          className={`rounded-full px-2 bg-moxie-500/10 dark:bg-moxie-500/30 flex items-baseline gap-1 h-[22px] leading-[23px]`}>
           <MoxieSimpleIcon />
-          <div className="text-moxie-500 flex items-baseline gap-1">
+          <div className="text-moxie-500 dark:text-white/60 flex items-baseline gap-1">
             {data?.earnings.total != null ? (
               <DecimalNumber value={data?.earnings.total} compact />
             ) : (

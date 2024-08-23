@@ -13,7 +13,7 @@ function IndexPopup() {
             href="https://warpcast.com/ds8"
             target="_blank"
             rel="noopener noreferrer nofollow"
-            className="hover:underline hover:opacity-70">
+            className="underline text-moxie-500 hover:opacity-70">
             ds8
           </a>
         </div>

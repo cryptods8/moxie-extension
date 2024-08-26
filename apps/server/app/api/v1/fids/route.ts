@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { fetchFid } from "../../fetch-fid";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams;
   const handle = q.get("handle");
-  const apiKey = req.headers.get("x-dte-api-key");
+  const apiKey = req.headers.get("x-me-api-key");
 
   if (apiKey !== process.env.API_KEY) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -16,13 +17,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Missing handle" }, { status: 400 });
     }
 
-    const resp = await fetch(`https://vasco.wtf/${handle}`, {
-      redirect: "manual",
-    });
-    const location = resp.headers.get("location");
-    const fidStr = location?.split("/").pop();
-    const fid = fidStr ? parseInt(fidStr, 10) : undefined;
+    const fid = await fetchFid(handle);
     if (fid == null) {
+      console.error(`Failed to fetch fid for ${handle}`);
       return NextResponse.json(
         { error: "Failed to fetch fid" },
         { status: 404 }

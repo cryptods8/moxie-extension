@@ -10,7 +10,7 @@ async function fetchFid(handle: string): Promise<FidResponse> {
   const params = new URLSearchParams()
   params.set("handle", handle)
   const resp = await fetch(`${apiBaseUrl}/api/v1/fids?${params.toString()}`, {
-    headers: { "x-dte-api-key": apiKey }
+    headers: { "x-me-api-key": apiKey }
   })
   if (!resp.ok) {
     throw new Error(`Failed to fetch fid data!`)

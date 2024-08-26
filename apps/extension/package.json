@@ -1,8 +1,8 @@
 {
   "name": "extension",
   "displayName": "Moxie extension",
-  "version": "0.0.1",
-  "description": "Shows Moxie earnings in real-time and FarScore",
+  "version": "0.0.2",
+  "description": "Shows Moxie earnings and FarScore in real-time",
   "author": "dusoo.s+ds8@gmail.com",
   "scripts": {
     "dev": "plasmo dev",

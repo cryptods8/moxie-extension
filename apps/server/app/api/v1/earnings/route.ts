@@ -76,7 +76,7 @@ async function fetchMoxieEarnings(
     console.log("E", error);
   }
 
-  const casts: AirstackFarcasterCast[] = data.FarcasterCasts?.Cast || [];
+  const casts: AirstackFarcasterCast[] = data?.FarcasterCasts?.Cast || [];
   return casts[0] ?? null;
 }
 

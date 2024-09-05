@@ -1,48 +1,23 @@
 import { fetchQuery, init } from "@airstack/node";
 import { NextRequest, NextResponse } from "next/server";
-import { fetchCastFromNeynar } from "./fetch-cast-from-neynar";
+import { fetchCastFromNeynar } from "../../earnings/fetch-cast-from-neynar";
 
-type EarnerType = "CHANNEL_FANS" | "CREATOR" | "NETWORK" | "CREATOR_FANS";
 interface AirstackFarcasterCast {
-  castedBy: {
-    userId: string;
-    fnames: string[];
-    profileImage?: string;
-  };
-  channel: {
-    name: string;
-    imageUrl?: string;
-  } | null;
-  moxieEarningsSplit:
-    | {
-        earnerType: EarnerType;
-        earningsAmount: number;
-      }[]
-    | null;
+  embeds?: {
+    url?: string;
+  }[];
 }
 
 const CastDataQueryFragment = `
 {
-  hash
-  castedBy {
-    userId
-    fnames
-  }
-  channel {
-    name
-    imageUrl
-  }
-  moxieEarningsSplit {
-    earnerType
-    earningsAmount
-  }
+  embeds
 }`;
 
 type HashCastIdentifier = { hash: `0x${string}`; type?: CastType };
 type UrlCastIdentifier = { url: string; type: CastType };
 type CastIdentifier = HashCastIdentifier | UrlCastIdentifier;
 
-async function fetchMoxieEarnings(
+async function fetchCastEmbeds(
   castId: CastIdentifier
 ): Promise<AirstackFarcasterCast | null> {
   if (!process.env.AIRSTACK_API_KEY) {
@@ -53,7 +28,7 @@ async function fetchMoxieEarnings(
   const { type } = castId;
 
   if (!type) {
-    const query = `query GetMoxieFanTokenHoldings($hash: String!) {
+    const query = `query GetCastEmbeds($hash: String!) {
       FarcasterReplies(input: {filter: { hash: { _eq: $hash}}, blockchain: ALL}) {
         Reply ${CastDataQueryFragment}
       }
@@ -81,7 +56,7 @@ async function fetchMoxieEarnings(
       }
       hash = neynarCast.hash;
     }
-    const query = `query GetMoxieFanTokenHoldings($hash: String!) {
+    const query = `query GetCastEmbeds($hash: String!) {
       FarcasterReplies(input: {filter: { hash: { _eq: $hash}}, blockchain: ALL}) {
         Reply ${CastDataQueryFragment}
       }
@@ -98,14 +73,14 @@ async function fetchMoxieEarnings(
   let query: string;
   let variables: Record<string, string>;
   if ("url" in castId) {
-    query = `query GetMoxieFanTokenHoldings($castUrl: String!) {
+    query = `query GetCastEmbeds($castUrl: String!) {
       FarcasterCasts(input: {filter: { url: { _eq: $castUrl}}, blockchain: ALL}) {
         Cast ${CastDataQueryFragment}
       }
     }`;
     variables = { castUrl: castId.url };
   } else {
-    query = `query GetMoxieFanTokenHoldings($hash: String!) {
+    query = `query GetCastEmbeds($hash: String!) {
       FarcasterCasts(input: {filter: { hash: { _eq: $hash}}, blockchain: ALL}) {
         Cast ${CastDataQueryFragment}
       }
@@ -150,43 +125,16 @@ export async function GET(req: NextRequest) {
       castId = { url: castUrl as string, type: type ?? "cast" };
     }
 
-    const cast = await fetchMoxieEarnings(castId);
+    const cast = await fetchCastEmbeds(castId);
     if (!cast) {
       return NextResponse.json(
         { error: "Failed to fetch cast" },
         { status: 404 }
       );
     }
-    const earnings = (cast.moxieEarningsSplit || []).reduce(
-      (acc, { earnerType, earningsAmount }) => {
-        if (earnerType === "CHANNEL_FANS") {
-          acc.channelFans += earningsAmount;
-        } else if (earnerType === "CREATOR") {
-          acc.creator += earningsAmount;
-        } else if (earnerType === "NETWORK") {
-          acc.network += earningsAmount;
-        } else if (earnerType === "CREATOR_FANS") {
-          acc.creatorFans += earningsAmount;
-        }
-        acc.total += earningsAmount;
-        return acc;
-      },
-      { channelFans: 0, creator: 0, network: 0, creatorFans: 0, total: 0 }
-    );
     return NextResponse.json({
       data: {
-        creator: {
-          fid: parseInt(cast.castedBy.userId, 10),
-          username: cast.castedBy.fnames[0],
-          profileImage: cast.castedBy.profileImage,
-        },
-        channel: cast.channel?.name
-          ? {
-              name: cast.channel.name,
-              imageUrl: cast.channel.imageUrl,
-            }
-          : null,
-        earnings,
+        embeds: cast.embeds || [],
       },
     });
   } catch (e) {

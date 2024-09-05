@@ -4,6 +4,7 @@ module.exports = {
   darkMode: "class",
   content: [
     "./contents/**/*.tsx",
+    "./ui/**/*.tsx",
     "*.tsx",
     "./node_modules/@radix-ui/react-hover-card/**/*.{js,ts,tsx}"
   ],

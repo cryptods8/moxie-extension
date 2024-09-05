@@ -4,9 +4,13 @@ import type { PlasmoMessageResponse } from "./fetch-far-score"
 
 export type CastType = "cast" | "reply"
 
+type HashCastIdentifier = { hash: `0x${string}`; type?: CastType };
+type UrlCastIdentifier = { url: string; type: CastType };
+
+export type CastIdentifier = HashCastIdentifier | UrlCastIdentifier
+
 async function fetchEarnings(
-  castUrl: string,
-  type: CastType
+  castId: CastIdentifier
 ): Promise<PlasmoMessageResponse<EarningsData>> {
   const apiBaseUrl =
     process.env.PLASMO_PUBLIC_PROXY_URL || "http://localhost:3000"
@@ -15,8 +19,14 @@ async function fetchEarnings(
     throw new Error("PLASMO_PUBLIC_PROXY_KEY not set")
   }
   const params = new URLSearchParams()
-  params.set("castUrl", castUrl)
-  params.set("type", type)
+  if ("hash" in castId) {
+    params.set("castHash", castId.hash)
+  } else {
+    params.set("castUrl", castId.url)
+  }
+  if (castId.type) {
+    params.set("type", castId.type)
+  }
   const resp = await fetch(
     `${apiBaseUrl}/api/v1/earnings?${params.toString()}`,
     {
@@ -53,8 +63,8 @@ export interface EarningsData {
 
 const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
   try {
-    const { castUrl, type } = req.body
-    const { data } = await fetchEarnings(castUrl, type)
+    const { castId } = req.body
+    const { data } = await fetchEarnings(castId)
     return res.send({ data })
   } catch (e) {
     console.error(e)

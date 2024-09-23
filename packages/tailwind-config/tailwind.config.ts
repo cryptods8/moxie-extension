@@ -10,7 +10,7 @@ const config: Config = {
     "./src/**/*.{ts,tsx}",
     "./@/**/*.{ts,tsx}",
     "./node_modules/@frames.js/render/dist/**/*.{ts,tsx,js,css}",
-    "../../packages/ui/**/*.{ts,tsx,js,css}",
+    "../../packages/ui/src/**/*.{ts,tsx,js,css}",
   ],
   plugins: [],
 } satisfies Config;

@@ -9,14 +9,13 @@ import { createRoot } from "react-dom/client"
 
 import { sendToBackground } from "@plasmohq/messaging"
 
-import type { FidData } from "~background/messages/fetch-fid-from-handle"
 import type {
   UserEarningsData,
   UserEarningStat
 } from "~background/messages/fetch-user-earnings"
 import { DecimalNumber } from "~ui/decimal-number"
 import { determineTheme } from "~utils/determine-theme"
-import * as storage from "~utils/storage"
+import { getFid } from "~utils/get-fid"
 
 export const config: PlasmoCSConfig = {
   matches: ["https://warpcast.com/*"],
@@ -71,19 +70,6 @@ function ChevronDownIcon() {
   )
 }
 
-async function fetchFid(handle: string) {
-  try {
-    const resp = await sendToBackground({
-      name: "fetch-fid-from-handle",
-      body: { handle }
-    })
-    return resp as { data?: FidData }
-  } catch (e) {
-    console.error("ERROR", e)
-    return null
-  }
-}
-
 async function fetchUserEarnings(fid: number) {
   try {
     const resp = await sendToBackground({
@@ -95,40 +81,6 @@ async function fetchUserEarnings(fid: number) {
     console.error("ERROR", e)
     return null
   }
-}
-
-async function getFid(window?: Window): Promise<number | null> {
-  const doc = window?.document
-  if (!doc) {
-    return null
-  }
-  const profileButton = doc.querySelector(
-    "#root > div > div > div > aside > div > div > a[title='Profile']"
-  )
-  if (!profileButton) {
-    return null
-  }
-  const href = profileButton.getAttribute("href")
-  if (!href) {
-    return null
-  }
-  const match = href.match(/\/([^/]+)$/)
-  const handle = match && match[1]
-  if (!handle) {
-    const lastFid = await storage.get<number>("lastFid")
-    return lastFid || null
-  }
-  const fidByHandle = await storage.get<number>(`fid-${handle}`)
-  if (fidByHandle) {
-    return fidByHandle
-  }
-  const resp = await fetchFid(handle)
-  const fid = resp.data?.fid
-  if (fid) {
-    storage.set(`fid-${handle}`, fid)
-    storage.set("lastFid", fid)
-  }
-  return fid || null
 }
 
 function MoxieEarnings({
@@ -205,7 +157,7 @@ function UserEarningsComponent({ fid }: { fid: number }) {
       <div className="px-2 py-1 text-lg font-semibold">Your Moxie earnings</div>
       <div className="px-2 py-1 flex flex-col gap-2">
         <MoxieEarnings earnings={userEarnings?.today} title="Today" />
-        <MoxieEarnings earnings={userEarnings?.weekly} title="This week" />
+        <MoxieEarnings earnings={userEarnings?.weekly} title="Last 7 days" />
         <MoxieEarnings earnings={userEarnings?.lifetime} title="All time" />
       </div>
     </div>
@@ -221,18 +173,6 @@ export const render: PlasmoRender<any> = async (
   }
   const rootContainer = await createRootContainer(anchor)
   const root = createRoot(rootContainer)
-
-  const profileAnchorElems =
-    anchor.element.parentElement?.querySelectorAll("span > a")
-  const el = profileAnchorElems[0]
-  const profileLink = el?.getAttribute("href")
-  const username = profileLink?.split("/").pop()
-
-  const linkElem =
-    anchor.element.tagName.toLowerCase() === "a" ? anchor.element : null
-  const castUrl = linkElem
-    ? (linkElem as HTMLAnchorElement).href
-    : window.location.href
 
   const theme = determineTheme(window)
 

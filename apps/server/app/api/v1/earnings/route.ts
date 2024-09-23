@@ -66,8 +66,9 @@ async function fetchMoxieEarnings(
       console.log("E", error);
     }
 
-    const replies: AirstackFarcasterCast[] = data.FarcasterReplies?.Reply || [];
-    const casts: AirstackFarcasterCast[] = data.FarcasterCasts?.Cast || [];
+    const replies: AirstackFarcasterCast[] =
+      data?.FarcasterReplies?.Reply || [];
+    const casts: AirstackFarcasterCast[] = data?.FarcasterCasts?.Cast || [];
     return replies[0] ?? casts[0] ?? null;
   } else if (type === "reply") {
     let hash: string | undefined;
@@ -91,7 +92,8 @@ async function fetchMoxieEarnings(
       console.log("E", error);
     }
 
-    const replies: AirstackFarcasterCast[] = data.FarcasterReplies?.Reply || [];
+    const replies: AirstackFarcasterCast[] =
+      data?.FarcasterReplies?.Reply || [];
     return replies[0] ?? null;
   }
 

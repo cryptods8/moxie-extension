@@ -62,7 +62,6 @@ export const render: PlasmoRender<any> = async (
   const castWrapperElem =
     anchor.element.parentElement?.parentElement?.parentElement?.parentElement
       ?.parentElement
-  console.log("castWrapperElem", castWrapperElem?.tagName)
   const linkElem =
     castWrapperElem?.tagName.toLowerCase() === "a" ? castWrapperElem : null
   const castUrl = linkElem

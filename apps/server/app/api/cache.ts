@@ -1,35 +1,48 @@
-import { Redis } from "@upstash/redis";
+import { createClient } from "redis";
 
-function redis() {
-  if (!process.env.REDIS_API_URL || !process.env.REDIS_API_TOKEN) {
-    return null;
-  }
-  const redis = new Redis({
-    url: process.env.REDIS_API_URL,
-    token: process.env.REDIS_API_TOKEN,
-  });
-  return redis;
+if (!process.env.REDIS_CONNECTION_STRING) {
+  console.error("No Redis connection string");
 }
+const client = await createClient({
+  url: process.env.REDIS_CONNECTION_STRING,
+})
+  .on("error", (err) => console.log("Redis Client Error", err))
+  .connect();
 
 export const cache = {
   get: async <V>(key: string): Promise<V | null> => {
-    const r = redis();
+    const r = client;
     if (!r) {
+      console.error("No Redis connection");
       return Promise.resolve(null);
     }
-    const value = await r.get(key);
-    return value as V | null;
+    try {
+      const value = await r.get(key);
+      return value ? (JSON.parse(value) as V) : null;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
   },
   set: async <V>(
     key: string,
     value: V,
     customExpiry?: number
   ): Promise<void> => {
-    const r = redis();
+    const r = client;
     if (!r) {
+      console.error("No Redis connection");
       return;
     }
-    // 7-day expiry
-    r.setex(key, customExpiry ?? 7 * 24 * 60 * 60, value);
+    try {
+      // 7-day expiry
+      await r.setEx(
+        key,
+        customExpiry ?? 7 * 24 * 60 * 60,
+        JSON.stringify(value)
+      );
+    } catch (e) {
+      console.error(e);
+    }
   },
 } as const;

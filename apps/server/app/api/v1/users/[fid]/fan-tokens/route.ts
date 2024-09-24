@@ -4,7 +4,7 @@ import data from "../../../../../../public/moxie_resolve.json";
 const query = `
 query AllFanTokens($beneficiaries: [String!]!, $symbol: String!) {
   subjectTokens(where: {symbol: $symbol}) {
-    portfolio(where: {balance_gt: 0}) {
+    portfolio(where: {balance_gt: 0}, first: 1000) {
       balance
       user {
         id                
@@ -13,7 +13,7 @@ query AllFanTokens($beneficiaries: [String!]!, $symbol: String!) {
     }
   }
   users(where: { id_in: $beneficiaries }) {
-    portfolio(where: {balance_gt: 0}) {
+    portfolio(where: {balance_gt: 0}, first: 1000) {
       subjectToken {
         name
         symbol

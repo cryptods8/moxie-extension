@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import data from "../../../../../../public/moxie_resolve.json";
+import moxieResolve from "../../../../../../public/moxie_resolve.json";
+import updatedNames from "../../../../../../public/updated_names.json";
+
+const data = moxieResolve as DataItem[];
 
 const query = `
 query AllFanTokens($beneficiaries: [String!]!, $symbol: String!) {
@@ -85,14 +88,27 @@ interface Response {
   };
 }
 
+function getUpdatedName(fid: number) {
+  return updatedNames.find((r) => r?.fid === fid);
+}
+
+function getUsername(fid: number) {
+  const updatedName = getUpdatedName(fid);
+  if (updatedName) {
+    return updatedName.profileName;
+  }
+  const dataItem = data.find((r) => r?.fid === fid);
+  return dataItem?.profileName;
+}
+
 function getUserData(address: string) {
-  const dataItem = (data as DataItem[]).find((r) => r?.address === address);
+  const dataItem = data.find((r) => r?.address === address);
   if (!dataItem) {
     return null;
   }
   return {
     fid: dataItem.fid,
-    username: dataItem.profileName,
+    username: getUpdatedName(dataItem.fid)?.profileName || dataItem.profileName,
   };
 }
 
@@ -174,12 +190,14 @@ export async function GET(
         } as ChannelFanToken;
       }
       if (symbolId === "fid") {
+        const fid = parseInt(id!, 10);
+        const username = getUsername(fid) ?? p.subjectToken.name;
         return {
           type: "USER",
           balance: p.balance,
-          fid: parseInt(id!, 10),
+          fid,
           id: id!,
-          username: p.subjectToken.name,
+          username,
         } as UserFanToken;
       }
       return {

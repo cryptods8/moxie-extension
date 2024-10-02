@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import moxieResolve from "../../../../../../public/moxie_resolve.json";
-import updatedNames from "../../../../../../public/updated_names.json";
+import { getAllAddresses, getUserData, getUsername } from "../../user-data";
 
-const data = moxieResolve as DataItem[];
+export const dynamic = "force-dynamic";
 
 const query = `
 query AllFanTokens($beneficiaries: [String!]!, $symbol: String!) {
@@ -88,30 +87,6 @@ interface Response {
   };
 }
 
-function getUpdatedName(fid: number) {
-  return updatedNames.find((r) => r?.fid === fid);
-}
-
-function getUsername(fid: number) {
-  const updatedName = getUpdatedName(fid);
-  if (updatedName) {
-    return updatedName.profileName;
-  }
-  const dataItem = data.find((r) => r?.fid === fid);
-  return dataItem?.profileName;
-}
-
-function getUserData(address: string) {
-  const dataItem = data.find((r) => r?.address === address);
-  if (!dataItem) {
-    return null;
-  }
-  return {
-    fid: dataItem.fid,
-    username: getUpdatedName(dataItem.fid)?.profileName || dataItem.profileName,
-  };
-}
-
 export async function GET(
   req: Request,
   { params }: { params: { fid: string } }
@@ -126,9 +101,7 @@ export async function GET(
   }
 
   const symbol = `fid:${fid}`;
-  const beneficiaries = (data as DataItem[])
-    .filter((r) => r?.fid === fid)
-    .map((r) => r?.address);
+  const beneficiaries = getAllAddresses(fid);
   const res = await fetch(
     "https://api.studio.thegraph.com/query/23537/moxie_protocol_stats_mainnet/version/latest",
     {

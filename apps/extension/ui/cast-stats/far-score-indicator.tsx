@@ -4,10 +4,13 @@ import { useEffect, useState } from "react"
 import { sendToBackground } from "@plasmohq/messaging"
 
 import type { FarScoreData } from "~background/messages/fetch-far-score"
+import type { UserEarningsData } from "~background/messages/fetch-user-earnings"
 import { DecimalNumber } from "~ui/decimal-number"
 import { FarScoreIcon } from "~ui/icons/far-score-icon"
 import { RefreshIcon } from "~ui/icons/refresh-icon"
+import { MoxieEarnings } from "~ui/moxie-earnings"
 import { NA } from "~ui/na"
+import { ShadowRoot } from "~ui/shadow-root"
 import { cachedGet } from "~utils/cached-get"
 
 async function fetchFarStats(handle: string) {
@@ -25,6 +28,21 @@ async function fetchFarStats(handle: string) {
   )
 }
 
+async function fetchUserEarnings(handle: string, force: boolean = false) {
+  return await cachedGet(
+    `userEarnings/${handle}`,
+    async () => {
+      const resp = await sendToBackground({
+        name: "fetch-user-earnings",
+        body: { handle }
+      })
+      const data = resp?.data as UserEarningsData | undefined
+      return data || null
+    },
+    { expiryInSeconds: 60 * 5, force }
+  )
+}
+
 export function FarScoreIndicator({
   handle,
   client
@@ -32,7 +50,10 @@ export function FarScoreIndicator({
   handle?: string
   client?: "supercast"
 }) {
-  const [data, setData] = useState<FarScoreData | null>(null)
+  const [data, setData] = useState<{
+    stats: FarScoreData
+    earnings: UserEarningsData
+  } | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -40,8 +61,10 @@ export function FarScoreIndicator({
       return
     }
     setLoading(true)
-    fetchFarStats(handle)
-      .then((res) => setData(res))
+    Promise.all([fetchFarStats(handle), fetchUserEarnings(handle)])
+      .then(([stats, earnings]) => {
+        setData({ stats, earnings })
+      })
       .finally(() => setLoading(false))
   }, [handle, setData, setLoading])
 
@@ -51,46 +74,62 @@ export function FarScoreIndicator({
         <div className="flex items-baseline gap-1 h-[22px] leading-[23px]">
           <FarScoreIcon />
           <div className="text-muted flex items-baseline gap-1">
-            {data?.farScore != null ? (
-              <DecimalNumber value={data.farScore} />
+            {data?.stats?.farScore != null ? (
+              <DecimalNumber value={data.stats.farScore} />
             ) : (
               <NA />
             )}
-            {loading && data?.farScore != null && <RefreshIcon spin />}
+            {loading && data?.stats?.farScore != null && <RefreshIcon spin />}
           </div>
         </div>
       </HoverCard.Trigger>
       <HoverCard.Portal>
         <HoverCard.Content className={`HoverCardContent`} style={{ zIndex: 1 }}>
-          <div
-            className={`min-h-0 grow overflow-hidden rounded-lg px-6 py-4 shadow-md ${client === "supercast" ? "bg-white dark:bg-gray-900" : "bg-app"}`}>
-            <div className="flex flex-row gap-4 gap-x-4">
-              <div>
-                <span className="text-muted text-xs text-gray-500 dark:text-gray-400">
-                  Far Score
-                </span>
-                <div className="text-default font-bold">
-                  {data?.farScore != null ? (
-                    <DecimalNumber value={data.farScore} />
-                  ) : (
-                    <NA />
-                  )}
+          <ShadowRoot>
+            <div
+              className={`min-h-0 min-w-64 grow overflow-hidden rounded-lg px-4 shadow-md bg-white dark:bg-default-dark`}
+              style={{ fontFamily: "Inter, sans-serif" }}>
+              <div className="flex flex-row gap-4 px-2 py-4">
+                <div>
+                  <span className="text-muted text-xs">Far Score</span>
+                  <div className="text-default font-bold">
+                    {data?.stats?.farScore != null ? (
+                      <DecimalNumber value={data.stats.farScore} />
+                    ) : (
+                      <NA />
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <span className="text-muted text-xs">Far Rank</span>
+                  <div className="text-default font-bold">
+                    {data?.stats?.farRank != null ? (
+                      data.stats.farRank.toLocaleString("en")
+                    ) : (
+                      <NA />
+                    )}
+                  </div>
                 </div>
               </div>
-              <div>
-                <span className="text-muted text-xs text-gray-500 dark:text-gray-400">
-                  Far Rank
-                </span>
-                <div className="text-default font-bold">
-                  {data?.farRank != null ? (
-                    data.farRank.toLocaleString("en")
-                  ) : (
-                    <NA />
-                  )}
+              <div className="px-2 py-4 border-t border-faint">
+                <div className="text-muted text-xs mb-2">Moxie earnings</div>
+                <div className="py-1 flex flex-col gap-2">
+                  <MoxieEarnings
+                    earnings={data?.earnings?.today}
+                    title="Today"
+                  />
+                  <MoxieEarnings
+                    earnings={data?.earnings?.weekly}
+                    title="Last 7 days"
+                  />
+                  <MoxieEarnings
+                    earnings={data?.earnings?.lifetime}
+                    title="All time"
+                  />
                 </div>
               </div>
             </div>
-          </div>
+          </ShadowRoot>
         </HoverCard.Content>
       </HoverCard.Portal>
     </HoverCard.Root>

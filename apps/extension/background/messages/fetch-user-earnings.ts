@@ -15,16 +15,27 @@ export interface UserEarningsData {
   lifetime: UserEarningStat
 }
 
-async function fetchUserEarnings(
-  fid: number
-): Promise<PlasmoMessageResponse<UserEarningsData>> {
+async function fetchUserEarnings({
+  fid,
+  handle
+}: {
+  fid?: number
+  handle?: string
+}): Promise<PlasmoMessageResponse<UserEarningsData>> {
   const apiBaseUrl =
     process.env.PLASMO_PUBLIC_PROXY_URL || "http://localhost:3000"
   const apiKey = process.env.PLASMO_PUBLIC_PROXY_KEY
   if (!apiKey) {
     throw new Error("PLASMO_PUBLIC_PROXY_KEY not set")
   }
-  const resp = await fetch(`${apiBaseUrl}/api/v1/users/${fid}/earnings`, {
+  if (!fid && !handle) {
+    throw new Error("Either fid or handle must be provided")
+  }
+  const url =
+    fid != null
+      ? `${apiBaseUrl}/api/v1/users/${fid}/earnings`
+      : `${apiBaseUrl}/api/v1/users/earnings?handle=${handle}`
+  const resp = await fetch(url, {
     headers: { "x-me-api-key": apiKey }
   })
   if (!resp.ok) {
@@ -38,8 +49,8 @@ async function fetchUserEarnings(
 
 const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
   try {
-    const { fid } = req.body
-    const { data } = await fetchUserEarnings(fid)
+    const { fid, handle } = req.body
+    const { data } = await fetchUserEarnings({ fid, handle })
     return res.send({ data })
   } catch (e) {
     console.error(e)

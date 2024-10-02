@@ -9,10 +9,16 @@
 .text-muted {
   color: #546473;
 }
+.border-faint {
+  border-color: #efefef;
+}
 
 @media (prefers-color-scheme: dark) {
   .text-muted {
     color: #8b99a4;
+  }
+  .border-faint {
+    border-color: #4c3a4e80;
   }
 }
 

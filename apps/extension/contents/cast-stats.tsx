@@ -24,7 +24,7 @@ export const getStyle = () => {
 
 const selectors = [
   '#root > div > div > div > main > div > div > div.fade-in > div > div > div.relative.p-4.pt-2 > div.flex.w-full.items-center > div > div > div:not([role="menuitem"]) > div:last-child',
-  '#root > div > div > div > main > div > div > div.fade-in > div > div > div > div.relative.flex.flex-col > div > div > div.flex.flex-row.justify-between.gap-2 > div:not([role="menuitem"]) > a'
+  '#root > div > div > div > main > div > div > div.fade-in > div > div > div > div.relative.flex.flex-col > div > div > div.flex.flex-row.justify-between.gap-2 > div:not([role="menuitem"]) > a:not(.cursor-pointer)'
 ] as const
 
 export const getInlineAnchorList: PlasmoGetInlineAnchorList = async () => {
@@ -103,11 +103,15 @@ export const render: PlasmoRender<any> = async (
   parentStyle?.setProperty("flex-wrap", "wrap")
   parentStyle?.setProperty("row-gap", "0")
 
+  const hasMiddot =
+    anchor.element.previousElementSibling?.previousElementSibling?.matches(
+      "div.text-muted.text-base"
+    )
+
   root.render(
     <InlineCSUIContainer anchor={anchor}>
-      <div
-        className={`flex items-baseline ${theme} gap-1`}
-        style={{ fontFamily: "Inter" }}>
+      <div className={`flex ${theme} gap-1`} style={{ fontFamily: "Inter" }}>
+        {!hasMiddot && <div className="text-muted">·</div>}
         <FarScoreIndicator handle={username} />
         <div className="text-muted">·</div>
         <EarningsIndicator castId={{ url: castUrl, type: castType }} />

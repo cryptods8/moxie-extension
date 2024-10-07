@@ -1,17 +1,20 @@
 import { createClient } from "redis";
 
-if (!process.env.REDIS_CONNECTION_STRING) {
-  console.error("No Redis connection string");
+async function getClient() {
+  if (!process.env.REDIS_CONNECTION_STRING) {
+    console.error("No Redis connection string");
+  }
+  const client = await createClient({
+    url: process.env.REDIS_CONNECTION_STRING,
+  })
+    .on("error", (err) => console.log("Redis Client Error", err))
+    .connect();
+  return client;
 }
-const client = await createClient({
-  url: process.env.REDIS_CONNECTION_STRING,
-})
-  .on("error", (err) => console.log("Redis Client Error", err))
-  .connect();
 
 export const cache = {
   get: async <V>(key: string): Promise<V | null> => {
-    const r = client;
+    const r = await getClient();
     if (!r) {
       console.error("No Redis connection");
       return Promise.resolve(null);
@@ -29,7 +32,7 @@ export const cache = {
     value: V,
     customExpiry?: number
   ): Promise<void> => {
-    const r = client;
+    const r = await getClient();
     if (!r) {
       console.error("No Redis connection");
       return;

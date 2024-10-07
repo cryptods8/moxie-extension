@@ -54,9 +54,9 @@ export async function fetchEarnings(fid: number): Promise<UserEarnings | null> {
   }
 
   const earnings: UserEarnings = {
-    today: data?.today?.FarcasterMoxieEarningStat[0] || null,
-    weekly: data?.weekly?.FarcasterMoxieEarningStat[0] || null,
-    lifetime: data?.lifetime?.FarcasterMoxieEarningStat[0] || null,
+    today: data?.today?.FarcasterMoxieEarningStat?.[0] || null,
+    weekly: data?.weekly?.FarcasterMoxieEarningStat?.[0] || null,
+    lifetime: data?.lifetime?.FarcasterMoxieEarningStat?.[0] || null,
   };
   return earnings;
 }

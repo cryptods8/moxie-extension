@@ -27,6 +27,13 @@ async function fetchCastEmbeds(
 
   const { type } = castId;
 
+  if ("url" in castId) {
+    const embeds = await fetchEmbedsFromWarpcast(castId);
+    if (embeds) {
+      return { embeds };
+    }
+  }
+
   if (!type) {
     const query = `query GetCastEmbeds($hash: String!) {
       FarcasterReplies(input: {filter: { hash: { _eq: $hash}}, blockchain: ALL}) {
@@ -99,6 +106,52 @@ async function fetchCastEmbeds(
 export const dynamic = "force-dynamic";
 
 type CastType = "cast" | "reply";
+
+interface WarpcastCastData {
+  result?: {
+    casts?: {
+      hash: string;
+      author: {
+        username: string;
+      };
+      embeds?: {
+        urls?: {
+          openGraph?: {
+            url: string;
+          };
+        }[];
+      };
+    }[];
+  };
+}
+
+async function fetchEmbedsFromWarpcast(castId: CastIdentifier) {
+  if ("hash" in castId) {
+    return null;
+  }
+  try {
+    const urlParts = castId.url.split("/");
+    const username = urlParts[urlParts.length - 2]!;
+    const hashPrefix = urlParts[urlParts.length - 1]!;
+    const resp = await fetch(
+      `https://client.warpcast.com/v2/user-thread-casts?castHashPrefix=${hashPrefix}&username=${username}&limit=1`
+    );
+    const data: WarpcastCastData = await resp.json();
+
+    const cast = data.result?.casts?.find(
+      (c) => c.author.username === username && c.hash.startsWith(hashPrefix)
+    );
+    const embeds = (cast?.embeds?.urls || [])
+      .map((url) => ({
+        url: url.openGraph?.url,
+      }))
+      .filter((e) => !!e.url);
+    return embeds;
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
+}
 
 export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams;

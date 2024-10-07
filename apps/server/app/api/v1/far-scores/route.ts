@@ -1,4 +1,4 @@
-import { fetchQuery, init } from "@airstack/node";
+import { fetchQuery } from "@/app/utils/airstack/fetch-query";
 import { NextRequest, NextResponse } from "next/server";
 
 interface AirstackSocial {
@@ -10,11 +10,6 @@ interface AirstackSocial {
 }
 
 async function fetchFarStats(handle: string): Promise<AirstackSocial | null> {
-  if (!process.env.AIRSTACK_API_KEY) {
-    throw new Error("AIRSTACK_API_KEY is required");
-  }
-  init(process.env.AIRSTACK_API_KEY);
-
   const query = `query GetSocialCapitalRank($handle: String!) {
     Socials(
       input: {filter: {profileName: {_eq: $handle}, dappName: {_eq: farcaster}}, blockchain: ethereum}

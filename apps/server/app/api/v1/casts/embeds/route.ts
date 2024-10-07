@@ -1,6 +1,6 @@
-import { fetchQuery, init } from "@airstack/node";
 import { NextRequest, NextResponse } from "next/server";
 import { fetchCastFromNeynar } from "../../earnings/fetch-cast-from-neynar";
+import { fetchQuery } from "@/app/utils/airstack/fetch-query";
 
 interface AirstackFarcasterCast {
   embeds?: {
@@ -20,11 +20,6 @@ type CastIdentifier = HashCastIdentifier | UrlCastIdentifier;
 async function fetchCastEmbeds(
   castId: CastIdentifier
 ): Promise<AirstackFarcasterCast | null> {
-  if (!process.env.AIRSTACK_API_KEY) {
-    throw new Error("AIRSTACK_API_KEY is required");
-  }
-  init(process.env.AIRSTACK_API_KEY);
-
   const { type } = castId;
 
   if ("url" in castId) {

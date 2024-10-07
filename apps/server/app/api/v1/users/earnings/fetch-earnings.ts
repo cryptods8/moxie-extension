@@ -1,4 +1,4 @@
-import { fetchQuery, init } from "@airstack/node";
+import { fetchQuery } from "@/app/utils/airstack/fetch-query";
 
 export const dynamic = "force-dynamic";
 
@@ -38,11 +38,6 @@ function getEarningsFragment(name: string, timeframe: Timeframe): string {
 }
 
 export async function fetchEarnings(fid: number): Promise<UserEarnings | null> {
-  if (!process.env.AIRSTACK_API_KEY) {
-    throw new Error("AIRSTACK_API_KEY is required");
-  }
-  init(process.env.AIRSTACK_API_KEY);
-
   const query = `query GetUserEarnings($fid: String!) {
     ${getEarningsFragment("today", "TODAY")}
     ${getEarningsFragment("weekly", "WEEKLY")}

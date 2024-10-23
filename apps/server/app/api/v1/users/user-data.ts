@@ -38,11 +38,17 @@ export function getAllAddresses(fid: number) {
   return data.filter((r) => r?.fid === fid).map((r) => r?.address);
 }
 
-export function getFid(handle: string) {
+export function getFid(handle: string): number | undefined {
   const updatedName = updatedNames.find((r) => r?.profileName === handle);
+  let fid: number | string | undefined;
   if (updatedName) {
-    return updatedName.fid;
+    fid = updatedName.fid;
+  } else {
+    const dataItem = data.find((r) => r?.profileName === handle);
+    fid = dataItem?.fid;
   }
-  const dataItem = data.find((r) => r?.profileName === handle);
-  return dataItem?.fid;
+  if (typeof fid === "string") {
+    return parseInt(fid, 10);
+  }
+  return fid;
 }

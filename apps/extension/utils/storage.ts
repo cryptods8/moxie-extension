@@ -10,7 +10,18 @@ export const get = async <T>(key: string): Promise<T | undefined> => {
 }
 
 export const set = async <T>(key: string, value: T): Promise<void> => {
-  await storage.set(key, value)
+  try {
+    await storage.set(key, value)
+  } catch (e) {
+    if (e instanceof Error) {
+      const { message } = e
+      if (message.includes("QUOTA_BYTES")) {
+        console.warn("Quota exceeded, clearing storage")
+        await storage.clear()
+      }
+    }
+    console.warn("failed to save value", key, value)
+  }
 }
 
 const remove = async (key: string): Promise<void> => {
@@ -38,4 +49,3 @@ export const getOrCompute = async <T>(
   }
   return computed
 }
-

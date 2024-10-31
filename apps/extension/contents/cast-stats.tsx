@@ -24,7 +24,8 @@ export const getStyle = () => {
 
 const selectors = [
   '#root > div > div > div > main > div > div > div.fade-in > div > div > div.relative.p-4.pt-2 > div.flex.w-full.items-center > div > div > div:not([role="menuitem"]) > div:last-child',
-  '#root > div > div > div > main > div > div > div.fade-in > div > div > div > div.relative.flex.flex-col > div > div > div.flex.flex-row.justify-between.gap-2 > div:not([role="menuitem"]) > a:not(.cursor-pointer)'
+  '#root > div > div > div > main > div > div > div.fade-in > div > div > div > div.relative.flex.flex-col > div > div > div.flex.flex-row.justify-between.gap-2 > div:not([role="menuitem"]) > div > a:not(.cursor-pointer)',
+  // '#root > div > div > div > main > div > div > div.fade-in > div > div > div > div.relative.flex.flex-col > div > div > div.flex.flex-row.justify-between.gap-2 > div > div > a:nth-child(4)'
 ] as const
 
 export const getInlineAnchorList: PlasmoGetInlineAnchorList = async () => {
